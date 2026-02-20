@@ -1,0 +1,123 @@
+Adder Compiler - Transcript
+Student: Somama
+Date: February 20, 2025
+This transcript shows the compiler working on 5 test cases.
+
+--------------------------------------------------
+Test 1: Simple number (37.snek)
+
+cat test/37.snek
+37
+
+make test/37.run
+[Build succeeded - cargo run generated assembly, nasm assembled, rustc linked with --target=x86_64-apple-darwin]
+
+cat test/37.s
+section .text
+global our_code_starts_here
+our_code_starts_here:
+  mov rax, 37
+  ret
+
+./test/37.run
+37
+
+--------------------------------------------------
+Test 2: Nested add1 (add.snek)
+
+cat test/add.snek
+(add1 (add1 5))
+
+make test/add.run
+[Build succeeded]
+
+cat test/add.s
+section .text
+global our_code_starts_here
+our_code_starts_here:
+  mov rax, 5
+add rax, 1
+add rax, 1
+  ret
+
+./test/add.run
+7
+
+--------------------------------------------------
+Test 3: Nested sub1 (complex.snek)
+
+cat test/complex.snek
+(sub1 (sub1 (add1 73)))
+
+make test/complex.run
+[Build succeeded]
+
+cat test/complex.s
+section .text
+global our_code_starts_here
+our_code_starts_here:
+  mov rax, 73
+add rax, 1
+sub rax, 1
+sub rax, 1
+  ret
+
+./test/complex.run
+72
+
+--------------------------------------------------
+Test 4: Negate operation (negate.snek)
+
+cat test/negate.snek
+(negate (add1 3))
+
+make test/negate.run
+[Build succeeded]
+
+cat test/negate.s
+section .text
+global our_code_starts_here
+our_code_starts_here:
+  mov rax, 3
+add rax, 1
+mov rbx, -1
+imul rax, rbx
+  ret
+
+./test/negate.run
+-4
+
+--------------------------------------------------
+Test 5: Double negate + simple number (double_neg.snek)
+
+cat test/double_neg.snek
+(negate (negate 8))
+
+make test/double_neg.run
+[Build succeeded]
+
+cat test/double_neg.s
+section .text
+global our_code_starts_here
+our_code_starts_here:
+  mov rax, 8
+mov rbx, -1
+imul rax, rbx
+mov rbx, -1
+imul rax, rbx
+  ret
+
+./test/double_neg.run
+8
+
+--------------------------------------------------
+Summary:
+All tests compiled and executed correctly.
+- Simple number: 37 → 37
+- add1 nested: 5 → 7
+- sub1 nested: 73 → 72
+- negate: (add1 3) → -4
+- double negate: 8 → 8
+
+Compiler handles Num, add1, sub1, and negate correctly.
+Test files: 10 created (37, add, complex, negate, zero, negative, max, min, double_neg, mixed)
