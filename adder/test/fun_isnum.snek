@@ -1,0 +1,1 @@
+(fun (f x) (isnum x)) (f 5)

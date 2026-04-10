@@ -31,7 +31,9 @@ fn parse_input(input: &str) -> i64 {
     }
 }
 
-fn print_value(i: i64) {
+#[no_mangle]
+#[export_name = "\x01snek_print"]
+pub extern "C" fn snek_print(i: i64) -> i64 {
     if i & 1 == 0 {
         println!("{}", i >> 1);
     } else if i == 3 {
@@ -41,6 +43,7 @@ fn print_value(i: i64) {
     } else {
         println!("Unknown value: {}", i);
     }
+    i
 }
 
 fn main() {
@@ -54,5 +57,5 @@ fn main() {
     let i: i64 = unsafe {
         our_code_starts_here(input)
     };
-    print_value(i);
+    snek_print(i);
 }

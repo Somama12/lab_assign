@@ -1,0 +1,1 @@
+(fun (even n) (if (= n 0) true (odd (- n 1)))) (fun (odd n) (if (= n 0) false (even (- n 1)))) (even 4)

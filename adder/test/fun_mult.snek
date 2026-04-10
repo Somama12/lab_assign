@@ -1,0 +1,1 @@
+(fun (add2 x y) (+ x y)) (add2 4 5)

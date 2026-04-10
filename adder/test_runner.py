@@ -40,6 +40,34 @@ tests = [
     # Input
     ("input_test", "input", "10", False, "10"),
     ("input_bool", "input", "true", False, "true"),
+    # Functions
+    ("fun_simple", "(fun (id x) x) (id 5)", "5", False),
+    ("fun_mult", "(fun (add2 x y) (+ x y)) (add2 4 5)", "9", False),
+    ("fun_0arg", "(fun (ret5) 5) (ret5)", "5", False),
+    ("fun_recursive", "(fun (fact n) (if (= n 1) 1 (* n (fact (- n 1))))) (fact 5)", "120", False),
+    ("fun_mutual_rec", "(fun (even n) (if (= n 0) true (odd (- n 1)))) (fun (odd n) (if (= n 0) false (even (- n 1)))) (even 4)", "true", False),
+    ("fun_nested_call", "(fun (f x) (+ x 1)) (fun (g x) (f (f x))) (g 10)", "12", False),
+    ("fun_locals", "(fun (compute x) (let ((y (* x 2)) (z (+ y 1))) (- z x))) (compute 10)", "11", False),
+    ("fun_mixed", "(fun (f x) (let ((y 2)) (+ x y))) (f 3)", "5", False),
+    ("fun_print", "(fun (f x) (print x)) (f 42)", "42\n42", False),
+    ("fun_print_bool", "(fun (f x) (print x)) (f true)", "true\ntrue", False),
+    ("fun_args_many", "(fun (f a b c d e) (+ a (+ b (+ c (+ d e))))) (f 1 2 3 4 5)", "15", False),
+    ("fun_tail", "(fun (t x) (if (= x 0) 99 (t (- x 1)))) (t 10)", "99", False),
+    ("fun_err_undef", "(f 5)", "not defined", True),
+    ("fun_err_arity", "(fun (f x) x) (f 1 2)", "expected 1 arguments, got 2", True),
+    ("fun_shadow", "(fun (f x) (let ((x (+ x 1))) x)) (f 5)", "6", False),
+    ("fun_call_in_let", "(fun (f x) (+ x 1)) (let ((y (f 10))) (+ y 2))", "13", False),
+    ("fun_call_in_op", "(fun (f x) (* x 2)) (+ (f 3) (f 4))", "14", False),
+    ("fun_nested_def", "(fun (f x) (let ((y (let ((z 1)) (+ x z)))) y)) (f 5)", "6", False),
+    ("fun_err_dup_param", "(fun (f x x) x) (f 1 2)", "Duplicate parameter", True),
+    ("fun_err_invalid_name", "(fun (let x) x) (let 5)", "Invalid function name", True),
+    ("fun_err_invalid_param", "(fun (f let) let) (f 5)", "Invalid parameter", True),
+    ("fun_loop", "(fun (f x) (loop (if (= x 0) (break 1) (set! x (- x 1))))) (f 3)", "1", False),
+    ("fun_block", "(fun (f x) (block (set! x (+ x 1)) x)) (f 5)", "6", False),
+    ("fun_multi_rec", "(fun (f x y) (if (= x 0) y (f (- x 1) (+ y 2)))) (f 5 0)", "10", False),
+    ("fun_set_param", "(fun (f x) (block (set! x 10) x)) (f 5)", "10", False),
+    ("fun_isnum", "(fun (f x) (isnum x)) (f 5)", "true", False),
+    ("fun_isbool", "(fun (f x) (isbool x)) (f 5)", "false", False),
 ]
 
 def make_test(name, code, expected, is_error, input_val=None):
@@ -50,6 +78,9 @@ def make_test(name, code, expected, is_error, input_val=None):
     print(f"Running {name}...")
     res = subprocess.run(["make", f"test/{name}.run"], capture_output=True, text=True)
     if res.returncode != 0:
+        if is_error and expected.lower() in res.stderr.lower():
+            print(f"Pass: {name}")
+            return True
         print(f"Fail: {name} failed to compile!")
         print(res.stderr)
         return False
@@ -64,7 +95,7 @@ def make_test(name, code, expected, is_error, input_val=None):
     err = res.stderr.strip()
     
     if is_error:
-        if expected not in err:
+        if expected.lower() not in err.lower():
             print(f"Fail: {name} expected error '{expected}', got stderr '{err}' and stdout '{out}'")
             return False
     else:
